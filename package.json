@@ -1,0 +1,5 @@
+{
+  "name": "cognitive-compliance-monorepo",
+  "private": true,
+  "workspaces": ["apps/*"]
+}
