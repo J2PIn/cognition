@@ -1,0 +1,16 @@
+name = "cogcomp-api"
+main = "src/index.ts"
+compatibility_date = "2026-02-05"
+
+[vars]
+APP_NAME = "Cognitive Readiness Check"
+COOKIE_NAME = "cc_session"
+COOKIE_MAX_AGE_SECONDS = "1209600" # 14 days
+
+# Put your Pages URL here after deploy, e.g. https://cogcomp.pages.dev
+WEB_ORIGIN = "http://localhost:5173"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "cogcomp_db"
+database_id = "REPLACE_WITH_YOUR_D1_ID"
