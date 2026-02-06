@@ -1,4 +1,4 @@
-name = "cogcomp-api"
+name = "cognition-api"
 main = "src/index.ts"
 compatibility_date = "2026-02-05"
 
@@ -12,5 +12,5 @@ WEB_ORIGIN = "http://localhost:5173"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "cogcomp_db"
-database_id = "REPLACE_WITH_YOUR_D1_ID"
+database_name = "cognition_db"
+database_id = "d5a56fc7-b949-4ff0-a4af-db13e672d243"
