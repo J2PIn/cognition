@@ -378,6 +378,21 @@ export default {
         return json({ ok: true, readiness, score: score_json }, 200, corsHeaders(env));
       }
 
+            if (url.pathname === "/api/_diag" && req.method === "GET") {
+        return json(
+          {
+            ok: true,
+            hasResendKey: !!env.RESEND_API_KEY && env.RESEND_API_KEY.length > 10,
+            resendKeyLen: env.RESEND_API_KEY ? env.RESEND_API_KEY.length : 0,
+            emailFromSet: !!env.EMAIL_FROM,
+            jwtSecretSet: !!env.JWT_SECRET && env.JWT_SECRET.length > 10,
+          },
+          200,
+          corsHeaders(env)
+        );
+      }
+
+
       if (url.pathname.startsWith("/api/session/") && req.method === "GET") {
         const user = await requireUser(env, req);
         if (!user) return json({ ok: false }, 401, corsHeaders(env));
