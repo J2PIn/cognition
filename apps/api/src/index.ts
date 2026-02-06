@@ -378,14 +378,21 @@ export default {
         return json({ ok: true, readiness, score: score_json }, 200, corsHeaders(env));
       }
 
-            if (url.pathname === "/api/_diag" && req.method === "GET") {
+                  // --- DIAG (temporary) ---
+      if (url.pathname === "/api/_diag" && req.method === "GET") {
+        const emailFrom = env.EMAIL_FROM ?? "";
         return json(
           {
             ok: true,
             hasResendKey: !!env.RESEND_API_KEY && env.RESEND_API_KEY.length > 10,
             resendKeyLen: env.RESEND_API_KEY ? env.RESEND_API_KEY.length : 0,
-            emailFromSet: !!env.EMAIL_FROM,
-            jwtSecretSet: !!env.JWT_SECRET && env.JWT_SECRET.length > 10,
+            emailFrom,
+            emailFromLen: emailFrom.length,
+            emailFromHasNewline: emailFrom.includes("\n") || emailFrom.includes("\r"),
+            emailFromTrimmed: emailFrom.trim(),
+            emailFromTrimmedLen: emailFrom.trim().length,
+            webOrigin: env.WEB_ORIGIN || null,
+            hasJwtSecret: !!env.JWT_SECRET && env.JWT_SECRET.length > 10,
           },
           200,
           corsHeaders(env)
