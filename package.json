@@ -2,4 +2,9 @@
   "name": "cognition-monorepo",
   "private": true,
   "workspaces": ["apps/*"]
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  }
 }
