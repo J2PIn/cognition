@@ -7,7 +7,7 @@ APP_NAME = "Cognitive Readiness Check"
 COOKIE_NAME = "cc_session"
 COOKIE_MAX_AGE_SECONDS = "1209600" # 14 days
 WEB_ORIGIN = "https://provecognition.site" 
-FROM_EMAIL = "Cognition <no-reply@send.provecognition.site>"
+EMAIL_FROM = "Cognition <no-reply@send.provecognition.site>"
 
 
 # Put your Pages URL here after deploy, e.g. https://cogcomp.pages.dev
