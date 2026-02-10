@@ -6,6 +6,7 @@ compatibility_date = "2026-02-05"
 APP_NAME = "Cognitive Readiness Check"
 COOKIE_NAME = "cc_session"
 COOKIE_MAX_AGE_SECONDS = "1209600" # 14 days
+WEB_ORIGIN = "https://provecognition.site" 
 FROM_EMAIL = "Cognition <no-reply@send.provecognition.site>"
 
 
