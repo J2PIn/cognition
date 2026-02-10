@@ -9,7 +9,8 @@ COOKIE_MAX_AGE_SECONDS = "1209600" # 14 days
 WEB_ORIGIN = "https://provecognition.site" 
 EMAIL_FROM = "Cognition <no-reply@send.provecognition.site>"
 
-
+[env.dev.vars]
+WEB_ORIGIN = "http://localhost:5173"
 
 [[d1_databases]]
 binding = "DB"
