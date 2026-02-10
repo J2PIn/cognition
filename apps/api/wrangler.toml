@@ -10,8 +10,6 @@ WEB_ORIGIN = "https://provecognition.site"
 EMAIL_FROM = "Cognition <no-reply@send.provecognition.site>"
 
 
-# Put your Pages URL here after deploy, e.g. https://cogcomp.pages.dev
-WEB_ORIGIN = "http://localhost:5173"
 
 [[d1_databases]]
 binding = "DB"
