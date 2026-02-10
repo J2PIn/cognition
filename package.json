@@ -1,6 +1,9 @@
 {
-  "name": "cognition-monorepo",
+  "name": "cognition",
   "private": true,
-  "workspaces": ["apps/*"]
+  "workspaces": ["apps/*"],
+  "scripts": {
+    "build": "npm --prefix apps/web run build"
   }
+}
 
