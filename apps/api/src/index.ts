@@ -8,6 +8,22 @@ export interface Env {
   COOKIE_MAX_AGE_SECONDS: string;
   WEB_ORIGIN: string;
 }
+import { handleAuthRequest, handleAuthVerify, handleMe } from "./auth";
+
+export default {
+  async fetch(req: Request, env: any) {
+    const url = new URL(req.url);
+
+    // API routes
+    if (url.pathname === "/auth/request" && req.method === "POST") return handleAuthRequest(req, env);
+    if (url.pathname === "/auth/verify" && req.method === "GET") return handleAuthVerify(req, env);
+    if (url.pathname === "/me" && req.method === "GET") return handleMe(req, env);
+
+    // otherwise existing logic...
+    return new Response("Not found", { status: 404 });
+  }
+};
+
 
 type Json = Record<string, unknown>;
 
