@@ -3,4 +3,4 @@
   "private": true,
   "workspaces": ["apps/*"]
   }
-}
+
