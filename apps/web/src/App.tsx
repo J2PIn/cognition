@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import AuthPanel from "./components/AuthPanel";
+
 
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE || "";
@@ -59,13 +59,13 @@ export default function App() {
   const canSend = useMemo(() => email.includes("@") && email.length > 5, [email]);
   const canVerify = useMemo(() => code.length === 6 && canSend, [code, canSend]);
 
-  async function requestCode(e: React.FormEvent) {
+  async function sendLink(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true); setMsg(null);
     try {
-      await postJson("/api/auth/request", { email });
+      await postJson("/api/auth/start", { email });
       setSent(true);
-      setMsg("Code sent. Check your email.");
+      setMsg("Link sent. Check your email.");
     } catch (err: any) {
       setMsg(err?.message || "Failed to send code.");
     } finally {
@@ -292,7 +292,7 @@ export default function App() {
           <h2 style={{ margin: 0, fontSize: 22 }}>How it works</h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 12 }}>
             {[
-              ["1) Email sign-in", "We send a 6-digit code."],
+              ["1) Email sign-in", "We email you a sign-in link."],
               ["2) Run a session", "Quick tasks, clean summary."],
               ["3) Get a flag", "GREEN / YELLOW / RED."],
             ].map(([t, d]) => (
@@ -330,7 +330,7 @@ export default function App() {
             <div>
               <div style={{ fontWeight: 900, fontSize: 18 }}>Sign in / Get access</div>
               <div style={{ color: "rgba(255,255,255,.72)", marginTop: 8, lineHeight: 1.5 }}>
-                We’ll email you a 6-digit code. No password.
+                We’ll email you a sign-in link. No password.
               </div>
 
               {msg && (
