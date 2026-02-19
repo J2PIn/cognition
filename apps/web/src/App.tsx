@@ -52,12 +52,27 @@ async function postJson(path: string, body: any) {
 export default function App() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
-  const [code, setCode] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const canSend = useMemo(() => email.includes("@") && email.length > 5, [email]);
-  const canVerify = useMemo(() => code.length === 6 && canSend, [code, canSend]);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  async function refreshMe() {
+    try {
+      const r = await fetch("/api/me", { credentials: "include" });
+      const j = await r.json();
+      setUserEmail(j?.user?.email ?? null);
+    } catch {
+      setUserEmail(null);
+    }
+  }
+  
+  React.useEffect(() => {
+    refreshMe();
+  }, []);
+
+  
 
   async function requestCode(e: React.FormEvent) {
     e.preventDefault();
@@ -67,24 +82,13 @@ export default function App() {
       setSent(true);
       setMsg("Link sent. Check your email.");
     } catch (err: any) {
-      setMsg(err?.message || "Failed to send code.");
+      setMsg(err?.message || "Failed to send link.");
     } finally {
       setBusy(false);
     }
   }
 
-  async function verifyCode(e: React.FormEvent) {
-    e.preventDefault();
-    setBusy(true); setMsg(null);
-    try {
-      await postJson("/api/auth/verify", { email, code });
-      setMsg("Signed in ✅");
-    } catch (err: any) {
-      setMsg(err?.message || "Failed to verify.");
-    } finally {
-      setBusy(false);
-    }
-  }
+  
 
   return (
     <div
@@ -349,37 +353,33 @@ export default function App() {
 
             <div style={{ alignSelf: "center" }}>
               {!sent ? (
-                <form onSubmit={requestCode} style={{ display: "grid", gap: 10 }}>
-                  <input
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@domain.com"
-                    type="email"
-                    required
-                    style={{
-                      padding: 12,
-                      borderRadius: 16,
-                      border: "1px solid rgba(255,255,255,.14)",
-                      background: "rgba(0,0,0,.25)",
-                      color: "rgba(255,255,255,.92)",
-                      outline: "none",
-                    }}
-                  />
-                  <button
-                    disabled={busy || !canSend}
-                    style={{
-                      padding: "12px 14px",
-                      borderRadius: 16,
-                      border: "1px solid rgba(255,255,255,.16)",
-                      background: busy ? "rgba(255,255,255,.08)" : "linear-gradient(135deg, rgba(125,211,252,.25), rgba(167,139,250,.18))",
-                      color: "rgba(255,255,255,.95)",
-                      cursor: busy || !canSend ? "not-allowed" : "pointer",
-                      fontWeight: 900,
-                    }}
-                  >
-                    {busy ? "Sending…" : "Send code"}
-                  </button>
-                </form>
+                ) : (
+                  <div style={{ display: "grid", gap: 10 }}>
+                    <div style={{ fontSize: 13, color: "rgba(255,255,255,.75)" }}>
+                      Sent to <b>{email}</b>
+                    </div>
+                    <div style={{ fontSize: 13, color: "rgba(255,255,255,.75)", lineHeight: 1.5 }}>
+                      Open the email and click the sign-in link.
+                    </div>
+                
+                    <button
+                      type="button"
+                      onClick={() => setSent(false)}
+                      style={{
+                        padding: "12px 14px",
+                        borderRadius: 16,
+                        border: "1px solid rgba(255,255,255,.16)",
+                        background: "rgba(255,255,255,.08)",
+                        color: "rgba(255,255,255,.92)",
+                        cursor: "pointer",
+                        fontWeight: 900,
+                      }}
+                    >
+                      Use a different email
+                    </button>
+                  </div>
+                )
+
               ) : (
                 <form onSubmit={verifyCode} style={{ display: "grid", gap: 10 }}>
                   <div style={{ fontSize: 13, color: "rgba(255,255,255,.75)" }}>
