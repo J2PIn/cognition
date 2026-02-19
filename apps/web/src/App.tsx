@@ -413,46 +413,7 @@ export default function App() {
               )}
             </div>
 
-              ) : (
-                <form onSubmit={verifyCode} style={{ display: "grid", gap: 10 }}>
-                  <div style={{ fontSize: 13, color: "rgba(255,255,255,.75)" }}>
-                    Sent to <b>{email}</b>
-                  </div>
-                  <input
-                    value={code}
-                    onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    placeholder="123456"
-                    inputMode="numeric"
-                    required
-                    style={{
-                      padding: 12,
-                      borderRadius: 16,
-                      border: "1px solid rgba(255,255,255,.14)",
-                      background: "rgba(0,0,0,.25)",
-                      color: "rgba(255,255,255,.92)",
-                      outline: "none",
-                      letterSpacing: 6,
-                      fontSize: 18,
-                      fontWeight: 800,
-                      textAlign: "center",
-                    }}
-                  />
-                  <button
-                    disabled={busy || !canVerify}
-                    style={{
-                      padding: "12px 14px",
-                      borderRadius: 16,
-                      border: "1px solid rgba(255,255,255,.16)",
-                      background: "rgba(255,255,255,.08)",
-                      color: "rgba(255,255,255,.92)",
-                      cursor: busy || !canVerify ? "not-allowed" : "pointer",
-                      fontWeight: 900,
-                    }}
-                  >
-                    {busy ? "Verifying…" : "Verify"}
-                  </button>
-                </form>
-              )}
+             
             </div>
           </div>
         </div>
