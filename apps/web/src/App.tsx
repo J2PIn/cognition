@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 
 
 
-const API_BASE = (import.meta as any).env?.VITE_API_BASE || "";
+const API_BASE = "";
 
 function Logo() {
   return (
