@@ -349,7 +349,7 @@ export default function App() {
 
             <div style={{ alignSelf: "center" }}>
               {!sent ? (
-                <form onSubmit={sendLink} style={{ display: "grid", gap: 10 }}>
+                <form onSubmit={requestCode} style={{ display: "grid", gap: 10 }}>
                   <input
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
