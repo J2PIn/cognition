@@ -394,7 +394,6 @@ export default function App() {
                   <div style={{ fontSize: 13, color: "rgba(255,255,255,.75)", lineHeight: 1.5 }}>
                     Open the email and click the sign-in link.
                   </div>
-            
                   <button
                     type="button"
                     onClick={() => setSent(false)}
