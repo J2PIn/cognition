@@ -183,11 +183,7 @@ export default function App() {
                 See the flow →
               </a>
 
-              {!API_BASE && (
-                <span style={{ color: "#fca5a5", fontSize: 13 }}>
-                  Missing <b>VITE_API_BASE</b> env var in Pages.
-                </span>
-              )}
+              
             </div>
 
             {/* Value props */}
