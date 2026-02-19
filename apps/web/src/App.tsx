@@ -59,7 +59,7 @@ export default function App() {
   const canSend = useMemo(() => email.includes("@") && email.length > 5, [email]);
   const canVerify = useMemo(() => code.length === 6 && canSend, [code, canSend]);
 
-  async function sendLink(e: React.FormEvent) {
+  async function requestCode(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true); setMsg(null);
     try {
@@ -349,7 +349,7 @@ export default function App() {
 
             <div style={{ alignSelf: "center" }}>
               {!sent ? (
-                <form onSubmit={requestCode} style={{ display: "grid", gap: 10 }}>
+                <form onSubmit={sendLink} style={{ display: "grid", gap: 10 }}>
                   <input
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
