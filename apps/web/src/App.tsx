@@ -1,4 +1,6 @@
 import React, { useMemo, useState } from "react";
+import AuthPanel from "./components/AuthPanel";
+
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE || "";
 
