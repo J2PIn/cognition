@@ -21,8 +21,8 @@ export const onRequestPost: PagesFunction = async ({ request, env }) => {
     if (!RESEND_API_KEY) return json({ ok: false, error: "Missing RESEND_API_KEY" }, 500);
     if (!EMAIL_FROM) return json({ ok: false, error: "Missing EMAIL_FROM" }, 500);
 
-    // TODO: generate token + store it (whatever your current flow is)
-    // For now, just send a test email to prove Resend works:
+    // If you already generate a token + verify URL, use it here.
+    // For now: send a test link so we can prove email delivery.
     const signInUrl = `${WEB_ORIGIN}/`;
 
     const resend = new Resend(RESEND_API_KEY);
@@ -34,14 +34,14 @@ export const onRequestPost: PagesFunction = async ({ request, env }) => {
       html: `<p>Click to sign in:</p><p><a href="${signInUrl}">${signInUrl}</a></p>`,
     });
 
-    // Resend SDKs vary; handle both shapes
-    const id = result?.id || result?.data?.id;
-    const error = result?.error || result?.data?.error;
+    // Handle SDK response shapes
+    const id = result?.id ?? result?.data?.id;
+    const err = result?.error ?? result?.data?.error;
 
-    if (error) return json({ ok: false, error }, 502);
+    if (err) return json({ ok: false, error: err, result }, 502);
     if (!id) return json({ ok: false, error: "Resend returned no id", result }, 502);
 
-    return json({ ok: true, id });
+    return json({ ok: true, id, to: email, from: EMAIL_FROM });
   } catch (e: any) {
     return json({ ok: false, error: String(e?.message || e) }, 502);
   }
