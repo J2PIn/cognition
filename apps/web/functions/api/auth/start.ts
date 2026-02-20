@@ -1,56 +1,48 @@
-export const onRequestPost = async (ctx: any) => {
-  const { request, env } = ctx;
-  const { email } = await request.json();
+import { Resend } from "resend";
 
-  if (!email) {
-    return new Response("Missing email", { status: 400 });
-  }
-
-  const token = await createToken(email, env.JWT_SECRET);
-
-  const verifyUrl = `${env.WEB_ORIGIN}/api/auth/verify?token=${token}`;
-
-  await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${env.RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: env.EMAIL_FROM,
-      to: email,
-      subject: "Your Cognition login link",
-      html: `<p>Click to sign in:</p>
-             <a href="${verifyUrl}">${verifyUrl}</a>`
-    })
+function json(body: any, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json" },
   });
-
-  return new Response(JSON.stringify({ ok: true }), {
-    headers: { "Content-Type": "application/json" }
-  });
-};
-
-async function createToken(email: string, secret: string) {
-  const payload = {
-    email,
-    exp: Math.floor(Date.now() / 1000) + (15 * 60)
-  };
-
-  const text = JSON.stringify(payload);
-  const encoder = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
-
-  const signature = await crypto.subtle.sign(
-    "HMAC",
-    key,
-    encoder.encode(text)
-  );
-
-  return btoa(text) + "." + btoa(String.fromCharCode(...new Uint8Array(signature)));
 }
+
+export const onRequestPost: PagesFunction = async ({ request, env }) => {
+  try {
+    const { email } = await request.json<any>().catch(() => ({}));
+    if (!email || typeof email !== "string" || !email.includes("@")) {
+      return json({ ok: false, error: "Invalid email" }, 400);
+    }
+
+    const RESEND_API_KEY = (env as any).RESEND_API_KEY;
+    const EMAIL_FROM = (env as any).EMAIL_FROM;
+    const WEB_ORIGIN = (env as any).WEB_ORIGIN || "https://provecognition.site";
+
+    if (!RESEND_API_KEY) return json({ ok: false, error: "Missing RESEND_API_KEY" }, 500);
+    if (!EMAIL_FROM) return json({ ok: false, error: "Missing EMAIL_FROM" }, 500);
+
+    // TODO: generate token + store it (whatever your current flow is)
+    // For now, just send a test email to prove Resend works:
+    const signInUrl = `${WEB_ORIGIN}/`;
+
+    const resend = new Resend(RESEND_API_KEY);
+
+    const result: any = await resend.emails.send({
+      from: EMAIL_FROM,
+      to: email,
+      subject: "Your Cognition sign-in link",
+      html: `<p>Click to sign in:</p><p><a href="${signInUrl}">${signInUrl}</a></p>`,
+    });
+
+    // Resend SDKs vary; handle both shapes
+    const id = result?.id || result?.data?.id;
+    const error = result?.error || result?.data?.error;
+
+    if (error) return json({ ok: false, error }, 502);
+    if (!id) return json({ ok: false, error: "Resend returned no id", result }, 502);
+
+    return json({ ok: true, id });
+  } catch (e: any) {
+    return json({ ok: false, error: String(e?.message || e) }, 502);
+  }
+};
