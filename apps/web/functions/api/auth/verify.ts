@@ -1,4 +1,4 @@
-import { verifyJwt } from "../../jwt";
+import { verifyJwt } from "../jwt";
 
 export const onRequestGet: PagesFunction = async ({ request, env }) => {
   const url = new URL(request.url);
