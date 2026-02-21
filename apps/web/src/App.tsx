@@ -618,7 +618,70 @@ export default function App() {
     }
   }
 
-  
+    // If we have a signed-in user, show the actual test session UI
+  if (userEmail) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          color: "rgba(255,255,255,.92)",
+          background:
+            "radial-gradient(1200px 600px at 20% 10%, rgba(125,211,252,.22), transparent 60%)," +
+            "radial-gradient(900px 500px at 80% 20%, rgba(167,139,250,.18), transparent 55%)," +
+            "radial-gradient(900px 600px at 45% 85%, rgba(34,211,238,.12), transparent 55%)," +
+            "linear-gradient(180deg, #0b1020, #060814)",
+          fontFamily:
+            "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji",
+        }}
+      >
+        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "28px 18px 60px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Logo />
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <div style={{ fontSize: 13, color: "rgba(255,255,255,.75)" }}>
+                Signed in as <b>{userEmail}</b>
+              </div>
+              <button
+                onClick={() => {
+                  // Minimal "sign out" UX for now: just forget local UI state
+                  // (real logout endpoint can be added later)
+                  setUserEmail(null);
+                  setSent(false);
+                  setMsg(null);
+                }}
+                style={{
+                  padding: "10px 14px",
+                  borderRadius: 14,
+                  border: "1px solid rgba(255,255,255,.18)",
+                  background: "rgba(255,255,255,.06)",
+                  color: "rgba(255,255,255,.92)",
+                  cursor: "pointer",
+                  fontWeight: 800,
+                }}
+              >
+                Back to landing
+              </button>
+            </div>
+          </div>
+
+          <div style={{ marginTop: 34, maxWidth: 720 }}>
+            <Session
+              email={userEmail}
+              onDone={() => {
+                setUserEmail(null);
+                setSent(false);
+                setMsg(null);
+              }}
+            />
+          </div>
+
+          <footer style={{ marginTop: 54, paddingTop: 18, borderTop: "1px solid rgba(255,255,255,.10)", color: "rgba(255,255,255,.6)", fontSize: 13 }}>
+            © {new Date().getFullYear()} Cognition
+          </footer>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -920,6 +983,21 @@ export default function App() {
                   <div style={{ fontSize: 13, color: "rgba(255,255,255,.75)", lineHeight: 1.5 }}>
                     Open the email and click the sign-in link.
                   </div>
+                  <button
+                    type="button"
+                    onClick={refreshMe}
+                    style={{
+                      padding: "12px 14px",
+                      borderRadius: 16,
+                      border: "1px solid rgba(255,255,255,.16)",
+                      background: "linear-gradient(135deg, rgba(125,211,252,.25), rgba(167,139,250,.18))",
+                      color: "rgba(255,255,255,.95)",
+                      cursor: "pointer",
+                      fontWeight: 900,
+                    }}
+                  >
+                    I clicked the link — continue
+                  </button>
                   <button
                     type="button"
                     onClick={() => setSent(false)}
