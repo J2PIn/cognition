@@ -1,11 +1,12 @@
-import { Resend } from "resend";
+import { signJwt } from "../../jwt"; // adjust path if needed
 
-function json(body: any, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "content-type": "application/json" },
-  });
-}
+const token = await signJwt(
+  { email },
+  (env as any).JWT_SECRET,
+  { expiresIn: "15m" }
+);
+
+const signInUrl = `${WEB_ORIGIN}/api/auth/verify?token=${encodeURIComponent(token)}`;
 
 export const onRequestPost: PagesFunction = async ({ request, env }) => {
   try {
