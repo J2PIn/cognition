@@ -1,49 +1,62 @@
-import { signJwt } from "../jwt"; // adjust path if needed
+import { Resend } from "resend";
+import { signJwt } from "../jwt";
 
-const token = await signJwt(
-  { email },
-  (env as any).JWT_SECRET,
-  { expiresIn: "15m" }
-);
+type Env = {
+  RESEND_API_KEY?: string;
+  EMAIL_FROM?: string;
+  WEB_ORIGIN?: string;
+  JWT_SECRET?: string;
+};
 
-const signInUrl = `${WEB_ORIGIN}/api/auth/verify?token=${encodeURIComponent(token)}`;
+function json(data: any, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { "content-type": "application/json" },
+  });
+}
 
-export const onRequestPost: PagesFunction = async ({ request, env }) => {
+async function readJson(request: Request) {
   try {
-    const { email } = await request.json<any>().catch(() => ({}));
-    if (!email || typeof email !== "string" || !email.includes("@")) {
-      return json({ ok: false, error: "Invalid email" }, 400);
-    }
-
-    const RESEND_API_KEY = (env as any).RESEND_API_KEY;
-    const EMAIL_FROM = (env as any).EMAIL_FROM;
-    const WEB_ORIGIN = (env as any).WEB_ORIGIN || "https://provecognition.site";
-
-    if (!RESEND_API_KEY) return json({ ok: false, error: "Missing RESEND_API_KEY" }, 500);
-    if (!EMAIL_FROM) return json({ ok: false, error: "Missing EMAIL_FROM" }, 500);
-
-    // If you already generate a token + verify URL, use it here.
-    // For now: send a test link so we can prove email delivery.
-    const signInUrl = `${WEB_ORIGIN}/`;
-
-    const resend = new Resend(RESEND_API_KEY);
-
-    const result: any = await resend.emails.send({
-      from: EMAIL_FROM,
-      to: email,
-      subject: "Your Cognition sign-in link",
-      html: `<p>Click to sign in:</p><p><a href="${signInUrl}">${signInUrl}</a></p>`,
-    });
-
-    // Handle SDK response shapes
-    const id = result?.id ?? result?.data?.id;
-    const err = result?.error ?? result?.data?.error;
-
-    if (err) return json({ ok: false, error: err, result }, 502);
-    if (!id) return json({ ok: false, error: "Resend returned no id", result }, 502);
-
-    return json({ ok: true, id, to: email, from: EMAIL_FROM });
-  } catch (e: any) {
-    return json({ ok: false, error: String(e?.message || e) }, 502);
+    const text = await request.text();
+    return text ? JSON.parse(text) : {};
+  } catch {
+    return {};
   }
+}
+
+export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
+  const body = await readJson(request);
+
+  // ✅ DEFINE email (this is what was missing / mismatched)
+  const email = String(body?.email ?? "").trim().toLowerCase();
+  if (!email || !email.includes("@")) return json({ ok: false, error: "Invalid email" }, 400);
+
+  if (!env.RESEND_API_KEY) return json({ ok: false, error: "Missing RESEND_API_KEY" }, 500);
+  if (!env.EMAIL_FROM) return json({ ok: false, error: "Missing EMAIL_FROM" }, 500);
+  if (!env.JWT_SECRET) return json({ ok: false, error: "Missing JWT_SECRET" }, 500);
+
+  const origin =
+    env.WEB_ORIGIN?.trim() ||
+    new URL(request.url).origin; // fallback
+
+  const token = await signJwt(
+    { email, exp: Math.floor(Date.now() / 1000) + 15 * 60 }, // 15 min
+    env.JWT_SECRET
+  );
+
+  const link = `${origin}/api/auth/verify?token=${encodeURIComponent(token)}`;
+
+  const resend = new Resend(env.RESEND_API_KEY);
+  const sent = await resend.emails.send({
+    from: env.EMAIL_FROM,
+    to: email, // ✅ uses defined email
+    subject: "Your Cognition sign-in link",
+    html: `
+      <p>Click to sign in:</p>
+      <p><a href="${link}">${link}</a></p>
+      <p>This link expires in 15 minutes.</p>
+    `,
+  });
+
+  return json({ ok: true, id: sent?.data?.id ?? null, to: email, from: env.EMAIL_FROM });
 };
