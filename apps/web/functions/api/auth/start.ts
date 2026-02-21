@@ -1,4 +1,4 @@
-import { signJwt } from "../../jwt"; // adjust path if needed
+import { signJwt } from "../jwt"; // adjust path if needed
 
 const token = await signJwt(
   { email },
