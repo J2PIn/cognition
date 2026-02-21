@@ -39,7 +39,7 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
     env.WEB_ORIGIN?.trim() ||
     new URL(request.url).origin; // fallback
 
-  const token = await signJwt(env.JWT_SECRET, { email }, 3600);
+  const token = await signJwt(env.JWT_SECRET, { email }, 60 * 15);
 
   const link = `${origin}/api/auth/verify?token=${encodeURIComponent(token)}`;
 
