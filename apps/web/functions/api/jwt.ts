@@ -34,7 +34,7 @@ async function hmacSha256(secret: string, data: string): Promise<Uint8Array> {
   return new Uint8Array(sig);
 }
 
-export async function jwtSign(
+export async function signJwt(
   secret: string,
   payload: Record<string, any>,
   expiresInSec: number
@@ -53,7 +53,7 @@ export async function jwtSign(
   return `${data}.${s}`;
 }
 
-export async function jwtVerify<T = any>(
+export async function verifyJwt<T = any>(
   secret: string,
   token: string
 ): Promise<{ ok: true; payload: T } | { ok: false; error: string }> {
