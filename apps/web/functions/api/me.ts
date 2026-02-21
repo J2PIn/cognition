@@ -1,20 +1,16 @@
-export const onRequestGet = async (ctx: any) => {
-  const { request, env } = ctx;
+import { verifyJwt } from "../jwt";
 
+export const onRequestGet: PagesFunction = async ({ request, env }) => {
   const cookie = request.headers.get("Cookie") || "";
   const match = cookie.match(/session=([^;]+)/);
-
   if (!match) {
-    return new Response(JSON.stringify({ user: null }));
+    return Response.json({ user: null });
   }
 
-  const email = await verifySession(match[1], env.JWT_SECRET);
-
-  if (!email) {
-    return new Response(JSON.stringify({ user: null }));
+  try {
+    const payload = await verifyJwt(match[1], (env as any).JWT_SECRET);
+    return Response.json({ user: { email: payload.email } });
+  } catch {
+    return Response.json({ user: null });
   }
-
-  return new Response(JSON.stringify({ user: { email } }), {
-    headers: { "Content-Type": "application/json" }
-  });
 };
