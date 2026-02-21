@@ -3,6 +3,71 @@ import React, { useMemo, useState } from "react";
 
 
 const API_BASE = "";
+function downloadText(filename: string, text: string, mime = "text/plain") {
+  const blob = new Blob([text], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function buildHtmlReport(result: any, userEmail: string) {
+  const when = new Date().toISOString();
+  const esc = (s: any) =>
+    String(s ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+
+  return `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cognition report</title>
+  <style>
+    body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; padding: 28px; color:#111827; }
+    .card { border:1px solid #e5e7eb; border-radius: 16px; padding: 18px; max-width: 720px; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; margin-top: 12px; }
+    .pill { display:inline-block; padding:10px 12px; border-radius: 12px; background:#111827; color:#fff; font-weight:800; }
+    table { width:100%; border-collapse: collapse; margin-top: 12px; }
+    td { border:1px solid #e5e7eb; padding:10px; }
+    .muted { color:#6b7280; font-size: 12px; }
+    @media print { body { padding: 0; } .card { border: none; } }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1 style="margin:0 0 6px">Cognition report</h1>
+    <div class="muted">Generated: ${esc(when)} • User: ${esc(userEmail)}</div>
+
+    <div class="row">
+      <div class="pill">FLAG: ${esc(result.flag)}</div>
+      <div style="padding:10px 12px; border-radius:12px; border:1px solid #e5e7eb;">
+        <b>Score</b><br/>${esc(result.score)} / 100
+      </div>
+    </div>
+
+    <table>
+      <tr><td><b>RT avg</b></td><td>${esc(result.rtAvgMs)} ms</td></tr>
+      <tr><td><b>Stroop acc</b></td><td>${esc(Math.round(result.stroopAcc * 100))}%</td></tr>
+      <tr><td><b>Stroop RT</b></td><td>${esc(result.stroopRtMs)} ms</td></tr>
+      <tr><td><b>Digits</b></td><td>${esc(Math.round(result.digitsAcc * 100))}%</td></tr>
+      <tr><td><b>Baseline z</b></td><td>${esc(result.baselineZ)}</td></tr>
+    </table>
+
+    <p class="muted" style="margin-top:14px">
+      Tip: Open this file and use <b>Print → Save as PDF</b> if you want a PDF.
+    </p>
+  </div>
+</body>
+</html>`;
+}
 
 function Logo() {
   return (
@@ -136,7 +201,45 @@ function Session({ email, onDone }: { email: string; onDone: () => void }) {
     setZ(z);
     setPhase("result");
   }
+    function currentResultPayload() {
+    return {
+      score: finalScore ?? 0,
+      flag,
+      rtAvgMs: rtAvg ?? 0,
+      stroopAcc: stroopAcc ?? 0,
+      stroopRtMs: stroopRt ?? 0,
+      digitsAcc: digitAcc ?? 0,
+      baselineZ: z,
+      createdAtISO: new Date().toISOString(),
+    };
+  }
 
+  async function shareResult() {
+    const to = prompt("Send result to email:", "");
+    if (!to) return;
+
+    try {
+      setBusy(true);
+      const res = await fetch(`${API_BASE}/api/results/share`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ to, result: currentResultPayload() }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) alert(j?.error ?? "Failed to send");
+      else alert("Sent!");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function downloadReport() {
+    const r = currentResultPayload();
+    const html = buildHtmlReport(r, email);
+    const name = `cognition-report-${new Date().toISOString().slice(0, 10)}.html`;
+    downloadText(name, html, "text/html");
+  }
   // --- Reaction time test ---
   const [rtTrial, setRtTrial] = React.useState(0);
   const [rtPrompt, setRtPrompt] = React.useState<"wait" | "go" | "tooSoon">("wait");
@@ -556,6 +659,37 @@ function Session({ email, onDone }: { email: string; onDone: () => void }) {
             fontWeight: 900,
           }}
         >
+                  <button
+          onClick={shareResult}
+          disabled={busy}
+          style={{
+            padding: "12px 14px",
+            borderRadius: 16,
+            border: "1px solid rgba(255,255,255,.16)",
+            background: "rgba(255,255,255,.08)",
+            color: "rgba(255,255,255,.92)",
+            cursor: "pointer",
+            fontWeight: 900,
+            opacity: busy ? 0.6 : 1,
+          }}
+        >
+          Share via email
+        </button>
+
+        <button
+          onClick={downloadReport}
+          style={{
+            padding: "12px 14px",
+            borderRadius: 16,
+            border: "1px solid rgba(255,255,255,.16)",
+            background: "rgba(255,255,255,.08)",
+            color: "rgba(255,255,255,.92)",
+            cursor: "pointer",
+            fontWeight: 900,
+          }}
+        >
+          Download report
+        </button>
           Back to landing
         </button>
       </div>
