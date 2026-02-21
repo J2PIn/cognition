@@ -39,6 +39,9 @@ export async function signJwt(
   payload: Record<string, any>,
   expiresInSec: number
 ): Promise<string> {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    throw new Error("payload_must_be_object");
+  }
   const header = { alg: "HS256", typ: "JWT" };
   const now = Math.floor(Date.now() / 1000);
   const body = { ...payload, iat: now, exp: now + expiresInSec };
